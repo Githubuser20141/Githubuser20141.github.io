@@ -1,18 +1,7 @@
-// Define possible bot responses
-const botResponses = [
-    "Hello!",
-    "How can I assist you today?",
-    "I'm sorry, I don't have the answer to that.",
-    "Please provide more information.",
-    "Thank you!",
-];
+// Replace 'YOUR_API_KEY' with your actual GPT-3 API key
+const API_KEY = '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';
 
-function getRandomBotResponse() {
-    const randomIndex = Math.floor(Math.random() * botResponses.length);
-    return botResponses[randomIndex];
-}
-
-function sendMessage() {
+async function sendMessage() {
     const userMessageInput = document.getElementById("user-message");
     const userMessage = userMessageInput.value;
 
@@ -20,18 +9,21 @@ function sendMessage() {
         appendMessage(userMessage, "user");
         userMessageInput.value = "";
 
-        setTimeout(() => {
-            const botResponse = getRandomBotResponse();
-            appendMessage(botResponse, "bot");
-        }, 500);
-    }
-}
+        try {
+            const response = await axios.post('https://api.openai.com/v1/engines/davinci/completions', {
+                prompt: userMessage,
+                max_tokens: 50
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${API_KEY}`
+                }
+            });
 
-function appendMessage(message, sender) {
-    const chatLog = document.getElementById("chat-log");
-    const messageElement = document.createElement("div");
-    messageElement.classList.add("message", sender);
-    messageElement.textContent = message;
-    chatLog.appendChild(messageElement);
-    chatLog.scrollTop = chatLog.scrollHeight;
+            const botResponse = response.data.choices[0].text;
+            appendMessage(botResponse, "bot");
+        } catch (error) {
+            console.log(error);
+        }
+    }
 }
